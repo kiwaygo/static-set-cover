@@ -4,7 +4,7 @@ Static-set-cover is a C++ compile-time approximator for solving set cover proble
 
 ## What is set cover problem?
 
-Say, there is a vault in a bank. The vault must be always guarded a security staff. The bank manager considers hiring from the below 4 candidates:
+Say, there is a vault in a bank. The vault must be always guarded by a security staff. The bank manager considers hiring from the below 4 candidates:
 
 - Candidate A can work on Monday, Tuesday, Wednesday and Thursday.
 - Candidate B can work on Thursday and Friday.
