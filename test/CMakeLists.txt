@@ -1,0 +1,11 @@
+macro(create_test TestFileName)
+    string(REGEX REPLACE ".cpp$" "" TestName ${TestFileName})
+    string(REGEX REPLACE "([A-Z])" "_\\1" DelimitedTestName ${TestName})
+    string(TOLOWER run${DelimitedTestName} ExecutableName)
+    add_executable(${ExecutableName} ${TestFileName})
+    target_link_libraries(${ExecutableName} PRIVATE GTest::GTest GTest::Main)
+	target_link_libraries(${ExecutableName} PRIVATE static-set-cover)
+    add_test(${ExecutableName} ${ExecutableName})
+endmacro(create_test)
+
+create_test("EvaluatorTest.cpp")
