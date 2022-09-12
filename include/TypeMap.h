@@ -3,6 +3,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "BoolPack.h"
+
 struct MapItemTag {};
 
 template <typename tKey, typename tValue>
