@@ -39,7 +39,7 @@ And that, would be super useful for C++ library developers.
 
 ## How do I start?
 
-Static-set-cover is a header-only library. It requires C++17 and has been tested on gcc 8.1. It may work with other compilers, but currently no guarantee.
+Static-set-cover is a header-only library. It requires C++17 and has been tested on gcc 8.1. It may work with other compilers, but there is currently no guarantee.
 
 To use the library:
 
