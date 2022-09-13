@@ -36,3 +36,14 @@ If only the compiler knew how to solve cover set problem. The library could make
 Thus, when the user attempts to extract all 3 properties from an object, the compiler would figure out that by picking just the function getMedian, all the requested targets are covered. As such, it could generate nothing more than a getMedian function call, yielding optimal performance.
 
 And that, would be super useful for C++ library developers.
+
+## How do I start?
+
+Static-set-cover is a header-only library. It requires C++17 and has been tested on gcc 8.1. It may work with other compilers, but currently no guarantee.
+
+To use the library:
+
+- Download the repository.
+- Read test cases from "test/" directory to learn the recommended usage. The tests are built with GoogleTest, and can be run with ctest (CMake's test driver).
+- In your project, where needed, include desired headers from the "include/" directory.
+
