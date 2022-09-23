@@ -33,7 +33,7 @@ If only the compiler knew how to solve cover set problem. You could rewrite func
 - Function getMax covers target {max}.
 - Function getMedian covers targets {median, min, max}.
 
-Thus, if the user attempts to extract all 3 properties from a list object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It generates nothing more than a call to getMedian, yielding optimal performance.
+Now, if the user attempts to extract all 3 properties from an IntList object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It would generates nothing more than a call to getMedian, yielding optimal performance.
 
 ## How do I start?
 
