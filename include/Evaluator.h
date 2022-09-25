@@ -9,6 +9,8 @@
 #include "TypeMap.h"
 #include "TypeSet.h"
 
+namespace set_cover {
+
 template <typename... tEvaluables>
 auto makeEvalType(std::tuple<tEvaluables...>)
     -> std::tuple<typename tEvaluables::Type...>;
@@ -53,3 +55,5 @@ public:
     return reorder(resultTuple, QueryOrder{});
   }
 };
+
+}

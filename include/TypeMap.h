@@ -5,6 +5,8 @@
 
 #include "BoolPack.h"
 
+namespace set_cover {
+
 struct MapItemTag {};
 
 template <typename tKey, typename tValue> struct MapItem : public MapItemTag {
@@ -25,3 +27,5 @@ protected:
 public:
   template <typename tKey> using Find = decltype(find(tKey{}));
 };
+
+}

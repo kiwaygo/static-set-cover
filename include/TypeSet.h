@@ -9,6 +9,8 @@
 #include "BoolPack.h"
 #include "IndexSequenceUtil.h"
 
+namespace set_cover {
+
 template <std::size_t tI, typename... tElements>
 constexpr bool hasRepeatsImpl() {
   if constexpr (sizeof...(tElements) == tI) {
@@ -125,4 +127,6 @@ constexpr std::size_t argmaxCommonality() {
     }
   }
   return pick;
+}
+
 }

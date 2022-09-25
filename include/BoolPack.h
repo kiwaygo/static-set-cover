@@ -4,6 +4,8 @@
 #include <type_traits>
 #include <utility>
 
+namespace set_cover {
+
 template <bool...> struct BoolPack {};
 
 template <bool... tBools>
@@ -47,3 +49,5 @@ auto unsetIndexImpl(BoolPack<tBools...>, std::index_sequence<tIndices...>)
 template <std::size_t tIndex, bool... tBools>
 auto unsetIndex(BoolPack<tBools...>) -> decltype(unsetIndexImpl<tIndex>(
     BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));
+
+}

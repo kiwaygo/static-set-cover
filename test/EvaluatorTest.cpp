@@ -4,6 +4,8 @@
 #include <numeric>
 #include <unordered_set>
 
+using namespace set_cover;
+
 struct Min {
   using Type = int;
 };
