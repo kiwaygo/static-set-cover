@@ -23,8 +23,7 @@ auto falsePackImpl(std::index_sequence<tIndices...>)
     -> BoolPack<(tIndices, false)...>;
 
 template <std::size_t tN>
-auto falsePack() -> decltype(falsePackImpl<tN>(
-    std::declval<std::make_index_sequence<tN>>()));
+auto falsePack() -> decltype(falsePackImpl<tN>(std::make_index_sequence<tN>{}));
 
 template <std::size_t tN, std::size_t... tIndices>
 auto truePackImpl(std::index_sequence<tIndices...>)
@@ -39,8 +38,7 @@ auto setIndexImpl(BoolPack<tBools...>, std::index_sequence<tIndices...>)
 
 template <std::size_t tIndex, bool... tBools>
 auto setIndex(BoolPack<tBools...>) -> decltype(setIndexImpl<tIndex>(
-    std::declval<BoolPack<tBools...>>(),
-    std::declval<std::make_index_sequence<sizeof...(tBools)>>()));
+    BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));
 
 template <std::size_t tIndex, bool... tBools, std::size_t... tIndices>
 auto unsetIndexImpl(BoolPack<tBools...>, std::index_sequence<tIndices...>)
@@ -48,5 +46,4 @@ auto unsetIndexImpl(BoolPack<tBools...>, std::index_sequence<tIndices...>)
 
 template <std::size_t tIndex, bool... tBools>
 auto unsetIndex(BoolPack<tBools...>) -> decltype(unsetIndexImpl<tIndex>(
-    std::declval<BoolPack<tBools...>>(),
-    std::declval<std::make_index_sequence<sizeof...(tBools)>>()));
+    BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));

@@ -23,5 +23,5 @@ protected:
   using tMapItems::find...;
 
 public:
-  template <typename tKey> using Find = decltype(find(std::declval<tKey>()));
+  template <typename tKey> using Find = decltype(find(tKey{}));
 };
