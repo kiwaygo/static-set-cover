@@ -12,4 +12,3 @@ if (${GTest_FOUND})
     enable_testing()
     add_subdirectory(test)
 endif()
-

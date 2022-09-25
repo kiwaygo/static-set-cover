@@ -44,4 +44,3 @@ To use the library:
 - Download the repository.
 - Read test cases from "test/" directory to learn the recommended usage. The tests are built with GoogleTest, and can be run with ctest (CMake's test driver).
 - In your project, where needed, include desired headers from the "include/" directory.
-
