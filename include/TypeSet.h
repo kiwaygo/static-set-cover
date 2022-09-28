@@ -19,7 +19,7 @@ constexpr bool hasRepeatsImpl() {
     using Ith = std::tuple_element<tI, std::tuple<tElements...>>;
     using SameAsIth = BoolPack<std::is_same_v<Ith, tElements>...>;
     using IsNotIth = decltype(unsetIndex<tI>(truePack<sizeof...(tElements)>()));
-    if constexpr (decltype(allOf(andPack(SameAsIth{}, IsNotIth{}))){}) {
+    if constexpr (decltype(anyOf(andPack(SameAsIth{}, IsNotIth{}))){}) {
       return true;
     } else {
       return hasRepeatsImpl<tI + 1, tElements...>();

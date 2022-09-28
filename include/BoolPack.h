@@ -12,6 +12,10 @@ template <bool... tBools>
 auto allOf(BoolPack<tBools...>)
     -> std::is_same<BoolPack<tBools..., true>, BoolPack<true, tBools...>>;
 
+template <bool... tBools>
+auto anyOf(BoolPack<tBools...>)
+    -> std::integral_constant<bool, (tBools || ...)>;
+
 template <bool... tBools0, bool... tBools1>
 auto andPack(BoolPack<tBools0...>, BoolPack<tBools1...>)
     -> BoolPack<(tBools0 && tBools1)...>;
