@@ -56,4 +56,4 @@ public:
   }
 };
 
-}
+} // namespace set_cover

@@ -129,4 +129,4 @@ constexpr std::size_t argmaxCommonality() {
   return pick;
 }
 
-}
+} // namespace set_cover

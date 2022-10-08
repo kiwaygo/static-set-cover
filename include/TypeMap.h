@@ -28,4 +28,4 @@ public:
   template <typename tKey> using Find = decltype(find(tKey{}));
 };
 
-}
+} // namespace set_cover

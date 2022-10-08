@@ -13,4 +13,4 @@ template <std::size_t tValue, std::size_t... tIndices>
 auto add(std::index_sequence<tIndices...>)
     -> std::index_sequence<(tIndices + tValue)...>;
 
-}
+} // namespace set_cover

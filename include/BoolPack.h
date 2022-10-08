@@ -58,4 +58,4 @@ template <std::size_t tIndex, bool... tBools>
 auto unsetIndex(BoolPack<tBools...>) -> decltype(unsetIndexImpl<tIndex>(
     BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));
 
-}
+} // namespace set_cover

@@ -19,4 +19,4 @@ constexpr auto reorder(const tTuple &aTuple, std::index_sequence<tIs...>) {
   return std::make_tuple(std::get<tIs>(aTuple)...);
 }
 
-}
+} // namespace set_cover
