@@ -7,12 +7,13 @@
 #include <utility>
 
 #include "BoolPack.h"
+#include "Impl.h"
 #include "IndexSequenceUtil.h"
 
 namespace set_cover {
 
 template <std::size_t tI, typename... tElements>
-constexpr bool hasRepeatsImpl() {
+constexpr bool hasRepeats(Impl) {
   if constexpr (sizeof...(tElements) == tI) {
     return false;
   } else {
@@ -22,49 +23,49 @@ constexpr bool hasRepeatsImpl() {
     if constexpr (decltype(anyOf(andPack(SameAsIth{}, IsNotIth{}))){}) {
       return true;
     } else {
-      return hasRepeatsImpl<tI + 1, tElements...>();
+      return hasRepeats<tI + 1, tElements...>(Impl{});
     }
   }
 }
 
 template <typename... tElements> constexpr bool hasRepeats() {
-  return hasRepeatsImpl<0, tElements...>();
+  return hasRepeats<0, tElements...>(Impl{});
 };
 
 template <std::size_t tI, typename tElement, typename... tElements>
-constexpr std::size_t flagImpl() {
+constexpr std::size_t flag(Impl) {
   if constexpr (sizeof...(tElements) == tI) {
     return 0;
   } else if (std::is_same_v<std::tuple_element_t<tI, std::tuple<tElements...>>,
                             tElement>) {
-    return (flagImpl<tI + 1, tElement, tElements...>() << 1) + 1;
+    return (flag<tI + 1, tElement, tElements...>(Impl{}) << 1) + 1;
   } else {
-    return flagImpl<tI + 1, tElement, tElements...>() << 1;
+    return flag<tI + 1, tElement, tElements...>(Impl{}) << 1;
   }
 }
 
 template <typename tElement, typename... tElements>
 constexpr std::size_t flag() {
   static_assert(hasRepeats<tElements...>() == false);
-  return flagImpl<0, tElement, tElements...>();
+  return flag<0, tElement, tElements...>(Impl{});
 };
 
 template <std::size_t tI, typename tElement, typename... tElements>
-constexpr std::size_t flagIndexImpl() {
+constexpr std::size_t flagIndex(Impl) {
   if constexpr (sizeof...(tElements) == tI) {
     return std::numeric_limits<std::size_t>::max();
   } else if (std::is_same_v<std::tuple_element_t<tI, std::tuple<tElements...>>,
                             tElement>) {
     return tI;
   } else {
-    return flagIndexImpl<tI + 1, tElement, tElements...>();
+    return flagIndex<tI + 1, tElement, tElements...>(Impl{});
   }
 }
 
 template <typename tElement, typename... tElements>
 constexpr std::size_t flagIndex() {
   static_assert(hasRepeats<tElements...>() == false);
-  return flagIndexImpl<0, tElement, tElements...>();
+  return flagIndex<0, tElement, tElements...>(Impl{});
 }
 
 constexpr std::size_t commonality(const std::size_t aSet0,

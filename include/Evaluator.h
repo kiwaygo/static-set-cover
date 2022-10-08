@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Impl.h"
 #include "TupleUtil.h"
 #include "TypeMap.h"
 #include "TypeSet.h"
@@ -12,7 +13,7 @@
 namespace set_cover {
 
 template <typename... tEvaluables>
-auto makeEvalType(std::tuple<tEvaluables...>)
+auto makeEvalType(Impl, std::tuple<tEvaluables...>)
     -> std::tuple<typename tEvaluables::Type...>;
 
 template <typename tUniverse, typename... tCovers> struct Evaluator {
@@ -30,7 +31,7 @@ protected:
   template <std::size_t tEvalSet, typename... tArgs>
   static auto sparseEval(tArgs &&...aArgs) {
     if constexpr (tEvalSet == 0) {
-      return decltype(makeEvalType(typename Universe::AsTuple{})){};
+      return decltype(makeEvalType(Impl{}, typename Universe::AsTuple{})){};
     } else {
       constexpr std::size_t bestEvalSet =
           argmaxCommonality<tEvalSet, sEvalSet<tCovers>...>();
