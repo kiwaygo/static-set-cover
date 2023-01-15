@@ -68,9 +68,8 @@ constexpr std::size_t flagIndex() {
   return flagIndex<0, tElement, tElements...>(Impl{});
 }
 
-constexpr std::size_t commonality(const std::size_t aSet0,
-                                  const std::size_t aSet1) {
-  std::size_t intersection = aSet0 & aSet1;
+template <typename tSet0, typename tSet1> constexpr std::size_t commonality() {
+  std::size_t intersection = tSet0() & tSet1();
   std::size_t commonality = 0;
   while (intersection) {
     commonality += intersection & 1;
@@ -82,17 +81,16 @@ constexpr std::size_t commonality(const std::size_t aSet0,
 struct NotList;
 
 template <std::size_t... tFlagIndices>
-constexpr std::size_t toSet(std::index_sequence<tFlagIndices...>) {
-  return (... | (1 << tFlagIndices));
-}
+constexpr auto toSet(std::index_sequence<tFlagIndices...>)
+    -> std::integral_constant<size_t, (... | (1 << tFlagIndices))>;
 
-template <std::size_t tSet> constexpr auto toCanonicalList() {
-  if constexpr (tSet == 0) {
+template <typename tSet> constexpr auto toCanonicalList() {
+  if constexpr (tSet() == 0) {
     return std::index_sequence<>();
-  } else if (tSet & 1) {
-    return prepend<0>(add<1>(toCanonicalList<(tSet >> 1)>()));
+  } else if (tSet() & 1) {
+    return prepend<0>(add<1>(toCanonicalList<(tSet() >> 1)>()));
   } else {
-    return add<1>(toCanonicalList<(tSet >> 1)>());
+    return add<1>(toCanonicalList<(tSet() >> 1)>());
   }
 }
 
@@ -102,8 +100,9 @@ template <typename... tElements> struct Universe {
 
   // A set of elements is represented as bitset indexed in the canonical order.
   template <typename... tSetElements>
-  static constexpr std::size_t sSet = (... |
-                                       flag<tSetElements, tElements...>());
+  using Set =
+      std::integral_constant<std::size_t,
+                             (... | flag<tSetElements, tElements...>())>;
 
   // A list of elements is represented as a sequence of flag indices.
   template <typename... tListElements>
@@ -117,17 +116,33 @@ template <typename... tElements> struct Universe {
   using AsTuple = std::tuple<tElements...>;
 };
 
-template <std::size_t tSet, std::size_t... tCandidateSets>
-constexpr std::size_t argmaxCommonality() {
-  static_assert(sizeof...(tCandidateSets) != 0);
-  std::size_t currentMax = 0, pick = 0;
-  for (const std::size_t candidateSet : {tCandidateSets...}) {
-    if (commonality(tSet, candidateSet) > currentMax) {
-      currentMax = commonality(tSet, candidateSet);
-      pick = candidateSet;
+template <std::size_t tI, typename tSet, typename... tCandidateSets>
+constexpr std::size_t argmaxCommonality(Impl) {
+  static_assert(tI < sizeof...(tCandidateSets));
+  if constexpr (tI == sizeof...(tCandidateSets) - 1) {
+    return tI;
+  } else {
+    constexpr std::size_t currentMax =
+        argmaxCommonality<tI + 1, tSet, tCandidateSets...>(Impl{});
+    using IthCandidate =
+        std::tuple_element_t<tI, std::tuple<tCandidateSets...>>;
+    using CurrentMaxCandidate =
+        std::tuple_element_t<currentMax, std::tuple<tCandidateSets...>>;
+    if constexpr (commonality<tSet, IthCandidate>() >=
+                  commonality<tSet, CurrentMaxCandidate>()) {
+      return tI;
+    } else {
+      return currentMax;
     }
   }
-  return pick;
+}
+
+template <typename tSet, typename... tCandidateSets>
+constexpr auto argmaxCommonality() {
+  static_assert(sizeof...(tCandidateSets) != 0);
+  return std::tuple_element_t<argmaxCommonality<0, tSet, tCandidateSets...>(
+                                  Impl{}),
+                              std::tuple<tCandidateSets...>>{};
 }
 
 } // namespace set_cover

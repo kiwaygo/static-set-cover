@@ -17,29 +17,26 @@ auto makeEvalType(Impl, std::tuple<tEvaluables...>)
     -> std::tuple<typename tEvaluables::Type...>;
 
 template <typename tUniverse, typename... tCovers> struct Evaluator {
-  using Universe = tUniverse;
 
   template <typename tCover>
-  static constexpr std::size_t sEvalSet = toSet(typename tCover::EvalList{});
-
-  template <typename tCover>
-  using EvalSet = std::integral_constant<std::size_t, sEvalSet<tCover>>;
+  using EvalSet = decltype(toSet(typename tCover::EvalList{}));
 
   using CoverByEvalSet = Map<MapItem<EvalSet<tCovers>, tCovers>...>;
 
 protected:
-  template <std::size_t tEvalSet, typename... tArgs>
-  static auto sparseEval(tArgs &&...aArgs) {
-    if constexpr (tEvalSet == 0) {
-      return decltype(makeEvalType(Impl{}, typename Universe::AsTuple{})){};
+  template <typename tEvalSet, typename... tArgs>
+  static auto sparseEval(tArgs &&...aArgs)
+      -> decltype(makeEvalType(Impl{}, typename tUniverse::AsTuple{})) {
+    if constexpr (tEvalSet() == 0) {
+      return {};
     } else {
-      constexpr std::size_t bestEvalSet =
-          argmaxCommonality<tEvalSet, sEvalSet<tCovers>...>();
-      using BestCover = typename CoverByEvalSet::template Find<
-          std::integral_constant<std::size_t, bestEvalSet>>;
+      using BestEvalSet =
+          decltype(argmaxCommonality<tEvalSet, EvalSet<tCovers>...>());
+      using BestCover = typename CoverByEvalSet::template Find<BestEvalSet>;
       auto src = BestCover()(std::forward<tArgs>(aArgs)...);
-      auto tgt =
-          sparseEval<tEvalSet &(~bestEvalSet)>(std::forward<tArgs>(aArgs)...);
+      using RemainderEvalSet =
+          std::integral_constant<std::size_t, tEvalSet() & (~BestEvalSet())>;
+      auto tgt = sparseEval<RemainderEvalSet>(std::forward<tArgs>(aArgs)...);
       replace(tgt, src,
               std::make_index_sequence<std::tuple_size_v<decltype(src)>>{},
               typename BestCover::EvalList{});
@@ -50,9 +47,10 @@ protected:
 public:
   template <typename... tEvaluables, typename... Args>
   static auto eval(Args &&...aArgs) {
-    constexpr std::size_t set = Universe::template sSet<tEvaluables...>;
-    auto resultTuple = sparseEval<set>(std::forward<Args>(aArgs)...);
-    using QueryOrder = typename Universe::template KPerm<tEvaluables...>;
+    auto resultTuple =
+        sparseEval<typename tUniverse::template Set<tEvaluables...>>(
+            std::forward<Args>(aArgs)...);
+    using QueryOrder = typename tUniverse::template KPerm<tEvaluables...>;
     return reorder(resultTuple, QueryOrder{});
   }
 };
