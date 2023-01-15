@@ -140,7 +140,29 @@ TEST(EvaluatorTest, Case5) {
 // Universe of same elements but defined in different order.
 // This should not lead to any observable difference.
 using U2 = Universe<Sorted, Var, Avg, Max, Min>;
-using MyEvaluator2 = Evaluator<U, GetMin, GetMax, GetSorted, GetAvg, GetVar>;
+
+struct GetMin2 : public GetMin {
+  using EvalList = U2::KPerm<Min>;
+};
+
+struct GetMax2 : public GetMax {
+  using EvalList = U2::KPerm<Max>;
+};
+
+struct GetSorted2 : public GetSorted {
+  using EvalList = U2::KPerm<Sorted, Min, Max>;
+};
+
+struct GetAvg2 : public GetAvg {
+  using EvalList = U2::KPerm<Avg>;
+};
+
+struct GetVar2 : public GetVar {
+  using EvalList = U2::KPerm<Var, Avg>;
+};
+
+using MyEvaluator2 =
+    Evaluator<U2, GetMin2, GetMax2, GetSorted2, GetAvg2, GetVar2>;
 
 TEST(EvaluatorTest, Case1InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
