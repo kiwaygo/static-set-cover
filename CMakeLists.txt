@@ -9,6 +9,6 @@ target_include_directories(static-set-cover INTERFACE include)
 
 find_package(GTest)
 if (${GTest_FOUND})
-    enable_testing()
+    include(CTest)
     add_subdirectory(test)
 endif()
