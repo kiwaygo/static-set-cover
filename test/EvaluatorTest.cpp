@@ -136,3 +136,60 @@ TEST(EvaluatorTest, Case5) {
   EXPECT_NEAR(var, 5.806, 1e-3);
   EXPECT_NEAR(avg, 4.167, 1e-3);
 }
+
+// Universe of same elements but defined in different order.
+// This should not lead to any observable difference.
+using U2 = Universe<Sorted, Var, Avg, Max, Min>;
+using MyEvaluator2 = Evaluator<U, GetMin, GetMax, GetSorted, GetAvg, GetVar>;
+
+TEST(EvaluatorTest, Case1InAlternateUniverse) {
+  const std::vector vec = {1, 5, 8, 2, 6, 3};
+  Log myLog;
+  const auto [min] = MyEvaluator2::eval<Min>(vec, &myLog);
+  const Log expectedLog = {"GetMin"};
+  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(min, 1);
+}
+
+TEST(EvaluatorTest, Case2InAlternateUniverse) {
+  const std::vector vec = {1, 5, 8, 2, 6, 3};
+  Log myLog;
+  const auto [max, sorted] = MyEvaluator2::eval<Max, Sorted>(vec, &myLog);
+  const Log expectedLog = {"GetSorted"};
+  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(max, 8);
+}
+
+TEST(EvaluatorTest, Case3InAlternateUniverse) {
+  const std::vector vec = {1, 5, 8, 2, 6, 3};
+  Log myLog;
+  const auto [var, avg] = MyEvaluator2::eval<Var, Avg>(vec, &myLog);
+  const Log expectedLog = {"GetVar"};
+  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_NEAR(var, 5.806, 1e-3);
+  EXPECT_NEAR(avg, 4.167, 1e-3);
+}
+
+TEST(EvaluatorTest, Case4InAlternateUniverse) {
+  const std::vector vec = {1, 5, 8, 2, 6, 3};
+  Log myLog;
+  const auto [min, var, avg] = MyEvaluator2::eval<Min, Var, Avg>(vec, &myLog);
+  const Log expectedLog = {"GetMin", "GetVar"};
+  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(min, 1);
+  EXPECT_NEAR(var, 5.806, 1e-3);
+  EXPECT_NEAR(avg, 4.167, 1e-3);
+}
+
+TEST(EvaluatorTest, Case5InAlternateUniverse) {
+  const std::vector vec = {1, 5, 8, 2, 6, 3};
+  Log myLog;
+  const auto [min, max, avg, var] =
+      MyEvaluator2::eval<Min, Max, Avg, Var>(vec, &myLog);
+  const Log expectedLog = {"GetSorted", "GetVar"};
+  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(min, 1);
+  EXPECT_EQ(max, 8);
+  EXPECT_NEAR(var, 5.806, 1e-3);
+  EXPECT_NEAR(avg, 4.167, 1e-3);
+}

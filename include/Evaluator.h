@@ -31,7 +31,7 @@ protected:
       return {};
     } else {
       using BestEvalSet =
-          decltype(argmaxCommonality<tEvalSet, EvalSet<tCovers>...>());
+          decltype(argmaxAlignment<tEvalSet, EvalSet<tCovers>...>());
       using BestCover = typename CoverByEvalSet::template Find<BestEvalSet>;
       auto src = BestCover()(std::forward<tArgs>(aArgs)...);
       using RemainderEvalSet =

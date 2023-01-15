@@ -78,6 +78,16 @@ template <typename tSet0, typename tSet1> constexpr std::size_t commonality() {
   return commonality;
 }
 
+template <typename tSet0, typename tSet1> constexpr std::size_t difference() {
+  std::size_t exclusiveOr = tSet0() ^ tSet1();
+  std::size_t difference = 0;
+  while (difference) {
+    difference += difference & 1;
+    difference >>= 1;
+  }
+  return difference;
+}
+
 struct NotList;
 
 template <std::size_t... tFlagIndices>
@@ -117,19 +127,25 @@ template <typename... tElements> struct Universe {
 };
 
 template <std::size_t tI, typename tSet, typename... tCandidateSets>
-constexpr std::size_t argmaxCommonality(Impl) {
+constexpr std::size_t argmaxAlignment(Impl) {
   static_assert(tI < sizeof...(tCandidateSets));
   if constexpr (tI == sizeof...(tCandidateSets) - 1) {
     return tI;
   } else {
     constexpr std::size_t currentMax =
-        argmaxCommonality<tI + 1, tSet, tCandidateSets...>(Impl{});
+        argmaxAlignment<tI + 1, tSet, tCandidateSets...>(Impl{});
     using IthCandidate =
         std::tuple_element_t<tI, std::tuple<tCandidateSets...>>;
     using CurrentMaxCandidate =
         std::tuple_element_t<currentMax, std::tuple<tCandidateSets...>>;
-    if constexpr (commonality<tSet, IthCandidate>() >=
+    if constexpr (commonality<tSet, IthCandidate>() ==
                   commonality<tSet, CurrentMaxCandidate>()) {
+      return difference<tSet, IthCandidate>() <=
+                     commonality<tSet, CurrentMaxCandidate>()
+                 ? tI
+                 : currentMax;
+    } else if constexpr (commonality<tSet, IthCandidate>() >=
+                         commonality<tSet, CurrentMaxCandidate>()) {
       return tI;
     } else {
       return currentMax;
@@ -138,9 +154,9 @@ constexpr std::size_t argmaxCommonality(Impl) {
 }
 
 template <typename tSet, typename... tCandidateSets>
-constexpr auto argmaxCommonality() {
+constexpr auto argmaxAlignment() {
   static_assert(sizeof...(tCandidateSets) != 0);
-  return std::tuple_element_t<argmaxCommonality<0, tSet, tCandidateSets...>(
+  return std::tuple_element_t<argmaxAlignment<0, tSet, tCandidateSets...>(
                                   Impl{}),
                               std::tuple<tCandidateSets...>>{};
 }
