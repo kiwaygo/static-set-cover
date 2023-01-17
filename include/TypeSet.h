@@ -68,6 +68,16 @@ constexpr std::size_t flagIndex() {
   return flagIndex<0, tElement, tElements...>(Impl{});
 }
 
+template <typename tSet> constexpr std::size_t size() {
+  std::size_t bits = tSet();
+  std::size_t size = 0;
+  while (bits) {
+    size += bits & 1;
+    bits >>= 1;
+  }
+  return size;
+}
+
 template <typename tSet0, typename tSet1> constexpr std::size_t commonality() {
   std::size_t intersection = tSet0() & tSet1();
   std::size_t commonality = 0;
