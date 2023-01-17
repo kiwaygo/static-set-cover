@@ -81,9 +81,9 @@ template <typename tSet0, typename tSet1> constexpr std::size_t commonality() {
 template <typename tSet0, typename tSet1> constexpr std::size_t difference() {
   std::size_t exclusiveOr = tSet0() ^ tSet1();
   std::size_t difference = 0;
-  while (difference) {
-    difference += difference & 1;
-    difference >>= 1;
+  while (exclusiveOr) {
+    difference += exclusiveOr & 1;
+    exclusiveOr >>= 1;
   }
   return difference;
 }
