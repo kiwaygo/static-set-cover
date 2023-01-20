@@ -35,7 +35,6 @@ protected:
     } else {
       using IthFunctor = typename FunctorByEvalSet::template Find<
           std::tuple_element_t<tI, tMinSetCover>>;
-      std::cout << std::tuple_element_t<tI, tMinSetCover>() << std::endl;
       auto src = IthFunctor{}(std::forward<tArgs>(aArgs)...);
       auto tgt =
           sparseEval<tI + 1, tMinSetCover>(std::forward<tArgs>(aArgs)...);
