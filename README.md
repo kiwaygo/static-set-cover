@@ -2,7 +2,7 @@
 
 Static-set-cover is a C++ compile-time approximator for solving set cover problem.
 
-![Build and Run Tests badge](https://github.com/github/docs/actions/workflows/BuildAndRunTests.yml/badge.svg)
+![Build and Run Tests badge](https://github.com/kiwaygo/static-set-cover/actions/workflows/BuildAndRunTests.yml/badge.svg)
 
 ## What is set cover problem?
 
