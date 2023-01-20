@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "Impl.h"
 #include "MinSetCover.h"
 #include "TupleUtil.h"
 #include "TypeMap.h"
@@ -15,9 +14,11 @@ namespace set_cover {
 
 using GreedyMinSetCover = MinSetCover<Greedy<TightestOneWins>>;
 
+namespace evaluator_impl {
 template <typename... tEvaluables>
-auto makeEvalType(Impl, std::tuple<tEvaluables...>)
+auto makeEvalType(std::tuple<tEvaluables...>)
     -> std::tuple<typename tEvaluables::Type...>;
+}
 
 template <typename tUniverse, typename... tFunctors> struct Evaluator {
 
@@ -29,7 +30,7 @@ template <typename tUniverse, typename... tFunctors> struct Evaluator {
 protected:
   template <size_t tI, typename tMinSetCover, typename... tArgs>
   static auto sparseEval(tArgs &&...aArgs)
-      -> decltype(makeEvalType(Impl{}, typename tUniverse::AsTuple{})) {
+      -> decltype(evaluator_impl::makeEvalType(typename tUniverse::AsTuple{})) {
     if constexpr (tI == std::tuple_size_v<tMinSetCover>) {
       return {};
     } else {

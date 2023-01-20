@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "Impl.h"
 #include "TypeSet.h"
 
 namespace set_cover {
@@ -51,15 +50,14 @@ class MinSetCover<tAlgorithm,
                   std::enable_if_t<std::is_base_of_v<GreedyTag, tAlgorithm>>> {
 
   template <std::size_t tI, typename tSet, typename... tCandidates>
-  static constexpr auto winner(Impl) {
+  static constexpr auto winner() {
     static_assert(tI < sizeof...(tCandidates));
     using CandidatesTuple = std::tuple<tCandidates...>;
     using IthCandidate = std::tuple_element_t<tI, CandidatesTuple>;
     if constexpr (tI == sizeof...(tCandidates) - 1) {
       return IthCandidate{};
     } else {
-      using CurrentWinner =
-          decltype(winner<tI + 1, tSet, tCandidates...>(Impl{}));
+      using CurrentWinner = decltype(winner<tI + 1, tSet, tCandidates...>());
       if constexpr (commonality<tSet, IthCandidate>() ==
                     commonality<tSet, CurrentWinner>()) {
         if constexpr (std::is_same_v<
@@ -82,7 +80,7 @@ class MinSetCover<tAlgorithm,
   template <typename tSet, typename... tCandidates>
   static constexpr auto winner() {
     static_assert(sizeof...(tCandidates) != 0);
-    return winner<0, tSet, tCandidates...>(Impl{});
+    return winner<0, tSet, tCandidates...>();
   }
 
 public:

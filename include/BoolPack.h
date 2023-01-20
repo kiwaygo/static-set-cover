@@ -4,8 +4,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "Impl.h"
-
 namespace set_cover {
 
 template <bool...> struct BoolPack {};
@@ -30,38 +28,45 @@ template <bool... tBools0, bool... tBools1>
 auto orPack(BoolPack<tBools0...>, BoolPack<tBools1...>)
     -> BoolPack<(tBools0 || tBools1)...>;
 
+namespace bool_pack_impl {
 template <std::size_t tN, std::size_t... tIndices>
-auto falsePack(Impl, std::index_sequence<tIndices...>)
+auto falsePack(std::index_sequence<tIndices...>)
     -> BoolPack<(tIndices, false)...>;
+}
 
 template <std::size_t tN>
 auto falsePack()
-    -> decltype(falsePack<tN>(Impl{}, std::make_index_sequence<tN>{}));
+    -> decltype(bool_pack_impl::falsePack<tN>(std::make_index_sequence<tN>{}));
 
+namespace bool_pack_impl {
 template <std::size_t tN, std::size_t... tIndices>
-auto truePack(Impl, std::index_sequence<tIndices...>)
+auto truePack(std::index_sequence<tIndices...>)
     -> BoolPack<(tIndices, true)...>;
+}
 
 template <std::size_t tN>
 auto truePack()
-    -> decltype(truePack<tN>(Impl{}, std::make_index_sequence<tN>{}));
+    -> decltype(bool_pack_impl::truePack<tN>(std::make_index_sequence<tN>{}));
 
+namespace bool_pack_impl {
 template <std::size_t tIndex, bool... tBools, std::size_t... tIndices>
-auto setIndex(Impl, BoolPack<tBools...>, std::index_sequence<tIndices...>)
+auto setIndex(BoolPack<tBools...>, std::index_sequence<tIndices...>)
     -> BoolPack<(tIndices == tIndex ? true : tBools)...>;
+}
 
 template <std::size_t tIndex, bool... tBools>
-auto setIndex(BoolPack<tBools...>) -> decltype(setIndex<tIndex>(
-    Impl{}, BoolPack<tBools...>{},
-    std::make_index_sequence<sizeof...(tBools)>{}));
+auto setIndex(BoolPack<tBools...>) -> decltype(bool_pack_impl::setIndex<tIndex>(
+    BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));
 
+namespace bool_pack_impl {
 template <std::size_t tIndex, bool... tBools, std::size_t... tIndices>
-auto unsetIndex(Impl, BoolPack<tBools...>, std::index_sequence<tIndices...>)
+auto unsetIndex(BoolPack<tBools...>, std::index_sequence<tIndices...>)
     -> BoolPack<(tIndices == tIndex ? false : tBools)...>;
+}
 
 template <std::size_t tIndex, bool... tBools>
-auto unsetIndex(BoolPack<tBools...>) -> decltype(unsetIndex<tIndex>(
-    Impl{}, BoolPack<tBools...>{},
-    std::make_index_sequence<sizeof...(tBools)>{}));
+auto unsetIndex(BoolPack<tBools...>)
+    -> decltype(bool_pack_impl::unsetIndex<tIndex>(
+        BoolPack<tBools...>{}, std::make_index_sequence<sizeof...(tBools)>{}));
 
 } // namespace set_cover

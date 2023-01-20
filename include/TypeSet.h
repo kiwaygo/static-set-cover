@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "BoolPack.h"
-#include "Impl.h"
 #include "IndexSequenceUtil.h"
 
 namespace set_cover {
 
-template <std::size_t tI, typename... tElements>
-constexpr bool hasRepeats(Impl) {
+namespace type_set_impl {
+
+template <std::size_t tI, typename... tElements> constexpr bool hasRepeats() {
   if constexpr (sizeof...(tElements) == tI) {
     return false;
   } else {
@@ -23,49 +23,59 @@ constexpr bool hasRepeats(Impl) {
     if constexpr (decltype(anyOf(andPack(SameAsIth{}, IsNotIth{}))){}) {
       return true;
     } else {
-      return hasRepeats<tI + 1, tElements...>(Impl{});
+      return hasRepeats<tI + 1, tElements...>();
     }
   }
 }
 
+} // namespace type_set_impl
+
 template <typename... tElements> constexpr bool hasRepeats() {
-  return hasRepeats<0, tElements...>(Impl{});
+  return type_set_impl::hasRepeats<0, tElements...>();
 };
 
+namespace type_set_impl {
+
 template <std::size_t tI, typename tElement, typename... tElements>
-constexpr std::size_t flag(Impl) {
+constexpr std::size_t flag() {
   if constexpr (sizeof...(tElements) == tI) {
     return 0;
   } else if (std::is_same_v<std::tuple_element_t<tI, std::tuple<tElements...>>,
                             tElement>) {
-    return (flag<tI + 1, tElement, tElements...>(Impl{}) << 1) + 1;
+    return (flag<tI + 1, tElement, tElements...>() << 1) + 1;
   } else {
-    return flag<tI + 1, tElement, tElements...>(Impl{}) << 1;
+    return flag<tI + 1, tElement, tElements...>() << 1;
   }
 }
+
+} // namespace type_set_impl
 
 template <typename tElement, typename... tElements>
 constexpr std::size_t flag() {
   static_assert(hasRepeats<tElements...>() == false);
-  return flag<0, tElement, tElements...>(Impl{});
+  return type_set_impl::flag<0, tElement, tElements...>();
 };
 
+namespace type_set_impl {
+
 template <std::size_t tI, typename tElement, typename... tElements>
-constexpr std::size_t flagIndex(Impl) {
+constexpr std::size_t flagIndex() {
   if constexpr (sizeof...(tElements) == tI) {
     return std::numeric_limits<std::size_t>::max();
   } else if (std::is_same_v<std::tuple_element_t<tI, std::tuple<tElements...>>,
                             tElement>) {
     return tI;
   } else {
-    return flagIndex<tI + 1, tElement, tElements...>(Impl{});
+    return flagIndex<tI + 1, tElement, tElements...>();
   }
 }
+
+} // namespace type_set_impl
 
 template <typename tElement, typename... tElements>
 constexpr std::size_t flagIndex() {
   static_assert(hasRepeats<tElements...>() == false);
-  return flagIndex<0, tElement, tElements...>(Impl{});
+  return type_set_impl::flagIndex<0, tElement, tElements...>();
 }
 
 template <typename tSet> constexpr std::size_t size() {
