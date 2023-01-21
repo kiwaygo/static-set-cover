@@ -35,14 +35,14 @@ If only the compiler knew how to solve cover set problem. You could rewrite func
 - Function getMax covers target {max}.
 - Function getMedian covers targets {median, min, max}.
 
-Now, if the user attempts to extract all 3 properties from an IntList object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It would generates nothing more than a call to getMedian, yielding optimal performance.
+Now, if the user attempts to extract all 3 properties from an IntList object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It would generate nothing more than a call to getMedian, yielding optimal performance.
 
 ## How do I start?
 
-Static-set-cover is a header-only library. It requires C++17 and has been tested on gcc 8.1. It may work with other compilers, but there is currently no guarantee.
+Static-set-cover is a header-only library that requires C++17. Tests are built with gcc and exercised by Github action on latest Ubuntu for each commit on the main branch.
 
 To use the library:
 
 - Download the repository.
-- Read test cases from "test/" directory to learn the recommended usage. The tests are built with GoogleTest, and can be run with ctest (CMake's test driver).
+- Read test cases from "test/" directory to learn the recommended usage. The tests are developed with GoogleTest, and can be run via CTest (CMake's test driver).
 - In your project, where needed, include desired headers from the "include/" directory.
