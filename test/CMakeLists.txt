@@ -9,3 +9,4 @@ macro(create_test TestFileName)
 endmacro(create_test)
 
 create_test("EvaluatorTest.cpp")
+create_test("MinSetCoverTest.cpp")
