@@ -13,10 +13,9 @@ struct E {};
 using U = Universe<A, B, C, D, E>;
 
 using ABCDE = U::Set<A, B, C, D, E>;
-using AB = U::Set<A, B>;
-using BD = U::Set<B, D>;
-using CE = U::Set<C, E>;
-using BE = U::Set<B, E>;
+using ABCD = U::Set<A, B, C, D>;
+using AE = U::Set<A, E>;
+using DE = U::Set<D, E>;
 
 namespace {
 
@@ -33,38 +32,162 @@ auto hasElement() -> decltype(hasElementImpl<tTuple, tElement>(
 
 TEST(MinSetCoverTest, GreedyAndFirstOneWinsTie) {
   using MyMinSetCover = MinSetCover<Greedy<FirstOneWins>>;
-  using Result = decltype(MyMinSetCover::eval<ABCDE, AB, BD, CE, BE>());
-  EXPECT_TRUE(decltype(hasElement<Result, AB>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, BD>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, CE>()){});
-  EXPECT_FALSE(decltype(hasElement<Result, BE>()){});
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, AE, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, AE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, AE, ABCD, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, AE, DE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, ABCD, AE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, AE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
 }
 
 TEST(MinSetCoverTest, GreedyAndLastOneWinsTie) {
   using MyMinSetCover = MinSetCover<Greedy<LastOneWins>>;
-  using Result = decltype(MyMinSetCover::eval<ABCDE, AB, BD, CE, BE>());
-  EXPECT_TRUE(decltype(hasElement<Result, AB>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, BD>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, CE>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, BE>()){});
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, AE, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, AE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, AE, ABCD, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, AE, DE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, AE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, ABCD, AE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, AE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, AE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
 }
 
-using ABCD = U::Set<A, B, C, D>;
-using DE = U::Set<D, E>;
-using _E = U::Set<E>;
+using CDE = U::Set<C, D, E>;
 
 TEST(MinSetCoverTest, GreedyAndTightestOneWinsTie) {
   using MyMinSetCover = MinSetCover<Greedy<TightestOneWins>>;
-  using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, _E>());
-  EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
-  EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, _E>()){});
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, CDE, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, CDE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, CDE, ABCD, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, CDE, DE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, ABCD, CDE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, CDE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
+  }
 }
 
 TEST(MinSetCoverTest, GreedyAndLoosestOneWinsTie) {
   using MyMinSetCover = MinSetCover<Greedy<LoosestOneWins>>;
-  using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, _E>());
-  EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
-  EXPECT_TRUE(decltype(hasElement<Result, DE>()){});
-  EXPECT_FALSE(decltype(hasElement<Result, _E>()){});
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, CDE, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, ABCD, DE, CDE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, CDE, ABCD, DE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, CDE, DE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, ABCD, CDE>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
+  {
+    using Result = decltype(MyMinSetCover::eval<ABCDE, DE, CDE, ABCD>());
+    EXPECT_TRUE(decltype(hasElement<Result, ABCD>()){});
+    EXPECT_TRUE(decltype(hasElement<Result, CDE>()){});
+    EXPECT_FALSE(decltype(hasElement<Result, DE>()){});
+  }
 }
