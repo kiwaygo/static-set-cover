@@ -21,19 +21,47 @@ Set cover problem is NP-hard, but there are known polynomial-time algorithms out
 
 ## Why solving at compile-time?
 
-Because it would be a super useful tool for developing C++ libraries. Say, as a library developer, you provide an IntList class that contains a list of integers. You also provide a couple of functions that extract certain properties from an IntList object:
+Because it would be a super useful tool for developing C++ libraries.
 
-- Function getMin scans the list and returns the smallest integer.
-- Function getMax scans the list and returns the largest integer.
-- Function getMedian copies the list to a temporary vector, sorts the elements, and returns their median. Note that with the sorted temporary vector, getting min and max values becomes as easy as accessing the first and the last element of the vector.
+### For example?
 
-A user of your library may decide to extract any combination of the 3 properties {min, max, median} by calling these functions. Suppose someone wants to extract all 3, so they first call getMin, then call getMax, then call getMedian. Oops! The resulting program ends up being far from optimal. It scans the list twice then sort the list once, and yet, ideally, sorting the list once already allows efficient extraction of min, max, and median!
+For example, as a library developer, you provide an IntList class that contains a list of integers. You also provide a couple of functions that extract certain properties from an IntList object:
 
-If only the compiler knew how to solve cover set problem. You could rewrite function getMedian so that it returns not only the median, but also the side products, the min and max values. Then, you could inform the compiler that:
+```c++
+class IntList {
+public:
+    // Scans through mData and returns the smallest integer
+    int getMin() const;
 
-- Function getMin covers target {min}.
-- Function getMax covers target {max}.
-- Function getMedian covers targets {median, min, max}.
+    // Scans through mData and returns the biggest integer.
+    int getMax() const;
+
+    // Copies mData to a temp vector v, sorts it, and returns v[v.size()/2].
+    int getMedian() const;
+
+private:
+    std::vector<int> mData;
+};
+```
+
+A user of your library may decide to extract any combination of the 3 properties {min, max, median} by calling these functions. Suppose someone wants to extract all 3, so they write:
+
+```c++
+void f() {
+    IntList list = createList();
+    std::cout << list.getMin() << ", " << list.getMax() <<  ", " << list.getMedian();
+}
+```
+
+At first glance, this looks fine. However, look closer - The program does a lot of unnecessary work! It scans the list twice and sorts the list once. Ideally, merely sorting the list is sufficient to compute min, max, and median!
+
+### Can we do better?
+
+If only the compiler knew how to solve cover set problem. You could rewrite function getMedian so that it returns not only the median, but also its trivial side products, the min and max values. Then, you could inform the compiler that:
+
+- getMin covers target {min}.
+- getMax covers target {max}.
+- getMedian covers targets {median, min, max}.
 
 Now, if the user attempts to extract all 3 properties from an IntList object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It would generate nothing more than a call to getMedian, yielding optimal performance.
 
