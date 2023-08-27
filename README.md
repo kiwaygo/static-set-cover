@@ -74,7 +74,7 @@ It is now up to the user to call the most efficient function. But there are two 
 - This is error-prone. If a user is not aware of these special getters, they could call the old functions and lose performance.
 - This scales poorly for library developer. For $3$ properties, you could end up writing $2^3 = 8$ member functions to take care of all specialized implementations. For $n$ properties, you might need $2^n$, which is a lot.
 
-Not great, but probably acceptable.
+Probably acceptable, but not great.
 
 ### If only...
 
