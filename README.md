@@ -13,7 +13,7 @@ Say, there is a vault in a bank. The vault must be always guarded by a security 
 - Candidate C can work on Saturday and Sunday.
 - Candidate D can work on Tuesday, Friday, Saturday and Sunday.
 
-What is the least amount of candidates to hire to secure the vault? Which ones?
+What is the least amount of candidates to hire to secure the vault the entire week? Which ones?
 
 Aforementioned is a set cover problem. It gives a list of targets (the days in a week), a list of candidates, and which targets each candidate covers. The goal is to select the least candidates to get all the targets covered.
 
@@ -25,45 +25,129 @@ Because it would be a super useful tool for developing C++ libraries.
 
 ### For example?
 
-For example, as a library developer, you provide an IntList class that contains a list of integers. You also provide a couple of functions that extract certain properties from an IntList object:
+For example, as a library developer, you provide a class that owns a list of integers, and a few member functions to extract properties from such list:
 
 ```c++
 class IntList {
+    vector<int> mData;
 public:
-    // Scans through mData and returns the smallest integer
-    int getMin() const;
-
-    // Scans through mData and returns the biggest integer.
-    int getMax() const;
-
-    // Copies mData to a temp vector v, sorts it, and returns v[v.size()/2].
-    int getMedian() const;
-
-private:
-    std::vector<int> mData;
+    int getMin() const { /* Scan through mData. Return the smallest integer.*/ }
+    int getMax() const { /* Scan through mData. Return the biggest integer. */ }
+    int getMedian() const { /* Copy mData to temp vector v. Sort v. Return v[v.size()/2]. */ }
 };
 ```
 
-A user of your library may decide to extract any combination of the 3 properties {min, max, median} by calling these functions. Suppose someone wants to extract all 3, so they write:
+A user may try to get any combination of {min, max, median}. If they want to extract all three, they write:
 
 ```c++
-void f() {
-    IntList list = createList();
-    std::cout << list.getMin() << ", " << list.getMax() <<  ", " << list.getMedian();
+void f(const IntList& list) {
+    cout << list.getMin() << ", " << list.getMax() <<  ", " << list.getMedian();
 }
 ```
 
-At first glance, this looks fine. However, look closer - The program does a lot of unnecessary work! It scans the list twice and sorts the list once. Ideally, merely sorting the list is sufficient to compute min, max, and median!
+At first glance, this looks fine. However, look closer - The program does a lot of unnecessary work! It scans the list twice and sorts the list once. Ideally, just sorting the list is enough to compute min, max, and median!
+
+Another user may try to get min and max, so they write:
+
+```c++
+void g(const IntList& list) {
+    cout << list.getMin() << ", " << list.getMax();
+}
+```
+
+Uh oh. This yields another program that does unnecessary work, but it is due to a different reason - It scans the list twice, but we can do just fine scanning the list once to find both min and max.
 
 ### Can we do better?
 
-If only the compiler knew how to solve cover set problem. You could rewrite function getMedian so that it returns not only the median, but also its trivial side products, the min and max values. Then, you could inform the compiler that:
+Let's see... As the library developer, perhaps you could provide a few specialized member functions.
 
-- getMin covers target {min}.
-- getMax covers target {max}.
-- getMedian covers targets {median, min, max}.
+```c++
+class IntList {
+    // ...
+    tuple<int, int, int> getMinMaxMedian() const;
+    tuple<int, int> getMinMax() const;
+};
+```
 
-Now, if the user attempts to extract all 3 properties from an IntList object, the compiler would figure out that by calling just getMedian, all the requested targets are covered - It would generate nothing more than a call to getMedian, yielding optimal performance.
+It is now up to the user to call the most efficient function. But there are two problems with this approach:
+
+- This is error-prone. If a user is not aware of these special getters, they could call the old functions and lose performance.
+- This scales poorly for library developer. For $3$ properties, you could end up writing $2^3 = 8$ member functions to take care of all specialized implementations. For $n$ properties, you might need $2^n$, which is a lot.
+
+Not great, but probably acceptable.
+
+### If only...
+
+If only the compiler knew how to solve set cover problem. Then, as the library developer, you could write along the lines of:
+
+```c++
+struct Cover1 {
+    using Targets = tuple<Min>;
+    static tuple<int> eval(const IntList&);
+};
+
+struct Cover2 {
+    using Targets = tuple<Max>;
+    static tuple<int> eval(const IntList&);
+};
+
+struct Cover3 {
+    using Targets = tuple<Min, Max, Median>;
+    static tuple<int, int, int> eval(const IntList&);
+};
+
+struct Cover4 {
+    using Targets = tuple<Min, Max>;
+    tuple<int, int> eval(const IntList&);
+};
+
+// Tada!
+using IntListProperties = SetCoverProblem<Cover1, Cover2, Cover3, Cover4>;
+```
+
+When the user wants to get all three properties from an IntList object, they would write:
+```c++
+void f(const IntList& list) {
+    tuple<int, int, int> result = IntListProperties::eval<Min, Max, Median>(list); // Calls Cover3::eval
+    cout << get<0>(result) << ", " << get<1>(result) <<  ", " << get<2>(result);
+}
+```
+
+Or, if they want to get just min and max, they would write:
+```c++
+void g(const IntList& list) {
+    tuple<int, int> result = IntListProperties::eval<Min, Max>(list); // Calls Cover4::eval
+    cout << get<0>(result) << ", " << get<1>(result);
+}
+```
+
+For you, it is really easy to add a new IntList property:
+```c++
+struct Cover5 {
+    using Targets = tuple<Avg>;
+    tuple<float> eval(const IntList&);
+};
+
+// Old: using IntListProperties = SetCoverProblem<Cover1, Cover2, Cover3, Cover4>;
+using IntListProperties = SetCoverProblem<Cover1, Cover2, Cover3, Cover4, Cover5>;
+```
+
+The API would even work out-of-the-box for trickier cases:
+```c++
+void i(const IntList& list) {
+    tuple<int, int> result1 = IntListProperties::eval<Min, Median>(list); // Calls Cover3::eval.
+    tuple<int, int> result2 = IntListProperties::eval<Median, Min>(list); // Calls Cover3::eval.
+    tuple<int, float> result3 = IntListProperties::eval<Min, Avg>(list); // Calls both Cover1::eval and Cover5::eval.
+}
+```
+
+### Guess what?
+
+The said class template that performs all the magic:
+```
+template <typename...> class SetCoverProblem;
+```
+is exactly what this project, static-set-cover, aims to provide!
 
 ## How do I start?
 
