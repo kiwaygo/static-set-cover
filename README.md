@@ -1,6 +1,8 @@
-# static-set-cover
+# Static-set-cover
 
-Static-set-cover is a C++ compile-time approximator for solving set cover problem.
+**Static-set-cover is a C++ compile-time approximator for solving set cover problem.**
+
+Check out the [Github repository](https://github.com/kiwaygo/static-set-cover). Issues and pull requests welcomed.
 
 ![Build and Run Tests badge](https://github.com/kiwaygo/static-set-cover/actions/workflows/BuildAndRunTests.yml/badge.svg)
 
@@ -155,6 +157,6 @@ Static-set-cover is a header-only library that requires C++17. Tests are built w
 
 To use the library:
 
-- Download the repository.
+- Download the [repository](https://github.com/kiwaygo/static-set-cover).
 - Read test cases from "test/" directory to learn the recommended usage. The tests are developed with GoogleTest, and can be run via CTest (CMake's test driver).
 - In your project, where needed, include desired headers from the "include/" directory.
