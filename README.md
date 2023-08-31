@@ -1,5 +1,3 @@
-# Static-set-cover
-
 **Static-set-cover is a C++ compile-time approximator for solving set cover problem.**
 
 Check out the [Github repository](https://github.com/kiwaygo/static-set-cover). Issues and pull requests welcomed.
