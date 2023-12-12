@@ -24,35 +24,25 @@ struct Sorted {
 };
 
 using U = Universe<Min, Max, Avg, Var, Sorted>;
-using Log = std::unordered_set<std::type_index>;
 
 struct GetMin {
   using EvalList = U::KPerm<Min>;
-  std::tuple<int> operator()(const std::vector<int> &aIn, Log *aLog) {
-    if (aLog) {
-      aLog->insert(std::type_index(typeid(*this)));
-    }
+  std::tuple<int> operator()(const std::vector<int> &aIn) {
     return *std::min_element(aIn.begin(), aIn.end());
   }
 };
 
 struct GetMax {
   using EvalList = U::KPerm<Max>;
-  std::tuple<int> operator()(const std::vector<int> &aIn, Log *aLog) {
-    if (aLog) {
-      aLog->insert(std::type_index(typeid(*this)));
-    }
+  std::tuple<int> operator()(const std::vector<int> &aIn) {
     return *std::max_element(aIn.begin(), aIn.end());
   }
 };
 
 struct GetSorted {
   using EvalList = U::KPerm<Sorted, Min, Max>;
-  std::tuple<std::vector<int>, int, int> operator()(const std::vector<int> &aIn,
-                                                    Log *aLog) {
-    if (aLog) {
-      aLog->insert(std::type_index(typeid(*this)));
-    }
+  std::tuple<std::vector<int>, int, int>
+  operator()(const std::vector<int> &aIn) {
     std::vector<int> out = aIn;
     std::sort(out.begin(), out.end());
     return {out, out.front(), out.back()};
@@ -61,21 +51,15 @@ struct GetSorted {
 
 struct GetAvg {
   using EvalList = U::KPerm<Avg>;
-  std::tuple<float> operator()(const std::vector<int> &aIn, Log *aLog) {
-    if (aLog) {
-      aLog->insert(std::type_index(typeid(*this)));
-    }
+  std::tuple<float> operator()(const std::vector<int> &aIn) {
     return std::accumulate(aIn.begin(), aIn.end(), 0.0) / aIn.size();
   }
 };
 
 struct GetVar {
   using EvalList = U::KPerm<Var, Avg>;
-  std::tuple<float, float> operator()(const std::vector<int> &aIn, Log *aLog) {
-    if (aLog) {
-      aLog->insert(std::type_index(typeid(*this)));
-    }
-    const auto [avg] = GetAvg()(aIn, nullptr);
+  std::tuple<float, float> operator()(const std::vector<int> &aIn) {
+    const auto [avg] = GetAvg()(aIn);
     float var = 0;
     for (int val : aIn) {
       var += (val - avg) * (val - avg);
@@ -84,43 +68,45 @@ struct GetVar {
   }
 };
 
-using MyEvaluator = Evaluator<U, GetMin, GetMax, GetSorted, GetAvg, GetVar>;
+using MyEvaluator =
+    Evaluator<U, LogTypeIndex, GetMin, GetMax, GetSorted, GetAvg, GetVar>;
+using Log = LogTypeIndex::Log;
 
 TEST(EvaluatorTest, Case1) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min] = MyEvaluator::eval<Min>(vec, &myLog);
+  MyEvaluator e;
+  const auto [min] = e.eval<Min>(vec);
   const Log expectedLog = {std::type_index(typeid(GetMin))};
-  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
 }
 
 TEST(EvaluatorTest, Case2) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [max, sorted] = MyEvaluator::eval<Max, Sorted>(vec, &myLog);
+  MyEvaluator e;
+  const auto [max, sorted] = e.eval<Max, Sorted>(vec);
   const Log expectedLog = {std::type_index(typeid(GetSorted))};
-  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(max, 8);
 }
 
 TEST(EvaluatorTest, Case3) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [var, avg] = MyEvaluator::eval<Var, Avg>(vec, &myLog);
+  MyEvaluator e;
+  const auto [var, avg] = e.eval<Var, Avg>(vec);
   const Log expectedLog = {std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_NEAR(var, 5.806, 1e-3);
   EXPECT_NEAR(avg, 4.167, 1e-3);
 }
 
 TEST(EvaluatorTest, Case4) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min, var, avg] = MyEvaluator::eval<Min, Var, Avg>(vec, &myLog);
+  MyEvaluator e;
+  const auto [min, var, avg] = e.eval<Min, Var, Avg>(vec);
   const Log expectedLog = {std::type_index(typeid(GetMin)),
                            std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
   EXPECT_NEAR(var, 5.806, 1e-3);
   EXPECT_NEAR(avg, 4.167, 1e-3);
@@ -128,12 +114,11 @@ TEST(EvaluatorTest, Case4) {
 
 TEST(EvaluatorTest, Case5) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min, max, avg, var] =
-      MyEvaluator::eval<Min, Max, Avg, Var>(vec, &myLog);
+  MyEvaluator e;
+  const auto [min, max, avg, var] = e.eval<Min, Max, Avg, Var>(vec);
   const Log expectedLog = {std::type_index(typeid(GetSorted)),
                            std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
   EXPECT_EQ(max, 8);
   EXPECT_NEAR(var, 5.806, 1e-3);
@@ -165,43 +150,43 @@ struct GetVar2 : public GetVar {
 };
 
 using MyEvaluator2 =
-    Evaluator<U2, GetMin2, GetMax2, GetSorted2, GetAvg2, GetVar2>;
+    Evaluator<U2, LogTypeIndex, GetMin2, GetMax2, GetSorted2, GetAvg2, GetVar2>;
 
 TEST(EvaluatorTest, Case1InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min] = MyEvaluator2::eval<Min>(vec, &myLog);
-  const Log expectedLog = {std::type_index(typeid(GetMin))};
-  EXPECT_EQ(myLog, expectedLog);
+  MyEvaluator2 e;
+  const auto [min] = e.eval<Min>(vec);
+  const Log expectedLog = {std::type_index(typeid(GetMin2))};
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
 }
 
 TEST(EvaluatorTest, Case2InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [max, sorted] = MyEvaluator2::eval<Max, Sorted>(vec, &myLog);
-  const Log expectedLog = {std::type_index(typeid(GetSorted))};
-  EXPECT_EQ(myLog, expectedLog);
+  MyEvaluator2 e;
+  const auto [max, sorted] = e.eval<Max, Sorted>(vec);
+  const Log expectedLog = {std::type_index(typeid(GetSorted2))};
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(max, 8);
 }
 
 TEST(EvaluatorTest, Case3InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [var, avg] = MyEvaluator2::eval<Var, Avg>(vec, &myLog);
-  const Log expectedLog = {std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  MyEvaluator2 e;
+  const auto [var, avg] = e.eval<Var, Avg>(vec);
+  const Log expectedLog = {std::type_index(typeid(GetVar2))};
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_NEAR(var, 5.806, 1e-3);
   EXPECT_NEAR(avg, 4.167, 1e-3);
 }
 
 TEST(EvaluatorTest, Case4InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min, var, avg] = MyEvaluator2::eval<Min, Var, Avg>(vec, &myLog);
-  const Log expectedLog = {std::type_index(typeid(GetMin)),
-                           std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  MyEvaluator2 e;
+  const auto [min, var, avg] = e.eval<Min, Var, Avg>(vec);
+  const Log expectedLog = {std::type_index(typeid(GetMin2)),
+                           std::type_index(typeid(GetVar2))};
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
   EXPECT_NEAR(var, 5.806, 1e-3);
   EXPECT_NEAR(avg, 4.167, 1e-3);
@@ -209,12 +194,11 @@ TEST(EvaluatorTest, Case4InAlternateUniverse) {
 
 TEST(EvaluatorTest, Case5InAlternateUniverse) {
   const std::vector vec = {1, 5, 8, 2, 6, 3};
-  Log myLog;
-  const auto [min, max, avg, var] =
-      MyEvaluator2::eval<Min, Max, Avg, Var>(vec, &myLog);
-  const Log expectedLog = {std::type_index(typeid(GetSorted)),
-                           std::type_index(typeid(GetVar))};
-  EXPECT_EQ(myLog, expectedLog);
+  MyEvaluator2 e;
+  const auto [min, max, avg, var] = e.eval<Min, Max, Avg, Var>(vec);
+  const Log expectedLog = {std::type_index(typeid(GetSorted2)),
+                           std::type_index(typeid(GetVar2))};
+  EXPECT_EQ(e.getLog(), expectedLog);
   EXPECT_EQ(min, 1);
   EXPECT_EQ(max, 8);
   EXPECT_NEAR(var, 5.806, 1e-3);

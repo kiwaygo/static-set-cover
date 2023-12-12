@@ -3,6 +3,9 @@
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_set>
 #include <utility>
 
 #include "MinSetCover.h"
@@ -20,7 +23,28 @@ auto makeEvalType(std::tuple<tEvaluables...>)
     -> std::tuple<typename tEvaluables::Type...>;
 }
 
-template <typename tUniverse, typename... tFunctors> struct Evaluator {
+class LogNothing {
+public:
+  using Log = void;
+  void clearLog() {}
+  void log(const std::type_info &aFunctor) {}
+};
+
+class LogTypeIndex {
+public:
+  using Log = std::unordered_set<std::type_index>;
+  void clearLog() { mLog.clear(); }
+  void log(const std::type_info &aFunctor) {
+    mLog.insert(std::type_index(aFunctor));
+  }
+  Log getLog() const { return mLog; }
+
+private:
+  Log mLog;
+};
+
+template <typename tUniverse, typename tLogPolicy, typename... tFunctors>
+struct Evaluator : public tLogPolicy {
 
   template <typename tFunctor>
   using EvalSet = decltype(toSet(typename tFunctor::EvalList{}));
@@ -29,7 +53,7 @@ template <typename tUniverse, typename... tFunctors> struct Evaluator {
 
 protected:
   template <size_t tI, typename tMinSetCover, typename... tArgs>
-  static auto sparseEval(tArgs &&...aArgs)
+  auto sparseEval(tArgs &&...aArgs)
       -> decltype(evaluator_impl::makeEvalType(typename tUniverse::AsTuple{})) {
     if constexpr (tI == std::tuple_size_v<tMinSetCover>) {
       return {};
@@ -37,6 +61,7 @@ protected:
       using IthFunctor = typename FunctorByEvalSet::template Find<
           std::tuple_element_t<tI, tMinSetCover>>;
       auto src = IthFunctor{}(std::forward<tArgs>(aArgs)...);
+      this->log(typeid(IthFunctor));
       auto tgt =
           sparseEval<tI + 1, tMinSetCover>(std::forward<tArgs>(aArgs)...);
       replace(tgt, src,
@@ -48,10 +73,11 @@ protected:
 
 public:
   template <typename... tEvaluables, typename... Args>
-  static auto eval(Args &&...aArgs) {
+  auto eval(Args &&...aArgs) {
     using MyEvalSet = typename tUniverse::template Set<tEvaluables...>;
     using MyMinSetCover =
         decltype(GreedyMinSetCover::eval<MyEvalSet, EvalSet<tFunctors>...>());
+    this->clearLog();
     auto resultTuple =
         sparseEval<0, MyMinSetCover>(std::forward<Args>(aArgs)...);
     using QueryOrder = typename tUniverse::template KPerm<tEvaluables...>;
